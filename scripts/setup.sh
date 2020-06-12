@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Creating the out directory.
-mkdir out
+mkdir ../out
 
 # Downloading Java.
 sudo apt-get -y update
