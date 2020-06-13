@@ -1,102 +1,140 @@
 package edu.missouri
 
-import java.io.{BufferedWriter, File, FileWriter}
+import java.io.{BufferedReader, BufferedWriter, File, FileReader, FileWriter}
+import org.apache.spark.sql.SparkSession
+import twitter4j.conf.ConfigurationBuilder
+import twitter4j.{IDs, Twitter, TwitterException, TwitterFactory}
+import scala.collection.mutable.ListBuffer
 
-import com.google.gson.Gson
-import org.apache.spark.{SparkConf, SparkContext}
+object CollectFriendsAndFollowers {
+  def getList(user: Long, twitterInstance: Twitter, listType: String): List[Long] = {
+    System.out.println("CollectFriendsAndFollowers :: getList :: user :: " + user + " listType :: " + listType)
 
-object CollectTweets {
+    var statuses = null: IDs
+    var retLst  = ListBuffer[Long]()
 
-  private val defaultInterval = 40
-  private val gson = new Gson()
-  private val config = ConfigFactory.parseFile(new File("conf/app.config"))
+    while(true) {
+      try {
+        if (listType.equalsIgnoreCase(Constants.Constants.FRIENDS)) {
+          statuses = twitterInstance.getFriendsIDs(user)
+        } else if (listType.equalsIgnoreCase(Constants.Constants.FOLLOWERS)) {
+          statuses = twitterInstance.getFollowersIDs(user)
+        } else {
+          System.out.println("CollectFriendsAndFollowers :: getList :: Unidentified Type.")
+          return null
+        }
+        // Return a list of upto 5000 friends and followers. (Reference http://twitter4j.org/oldjavadocs/2.2.6/twitter4j/api/FriendsFollowersMethods.html)
+        return retLst.toList
+      } catch {
+        case e: TwitterException => {
+          System.out.println("CollectFriendsAndFollowers :: getList :: Twitter exception while proccessing user id :: " + user)
 
-  def main(args: Array[String]) = {
-    // Defining the Spark Context.
-    val conf = new SparkConf().setMaster("local[*]")
-    val sc = new SparkContext(conf)
+          // Return back, if the user id is not found.
+          if(e.resourceNotFound() == true && e.getErrorCode() == 34 && e.getStatusCode() == 404){
+            System.out.println("CollectFriendsAndFollowers :: getList :: User not found.")
+            return null
+          }
 
-    // Validating input arguments.
-    if(args.length != 1) {
-      println("Usage: " + "CollectTweets  <NUM_TO_COLLECT>")
-      System.exit(-1)
+          // Waiting for limit to be reset.
+          var waitTime = Math.abs(e.getRateLimitStatus.getSecondsUntilReset)
+          Thread.sleep(waitTime * 1000)
+        }
+      }
     }
-
-    // Streaming Twitter Data.
-    getTwitterData(sc, args(0).toInt)
-
-    // Stop and exit.
-    sc.stop()
-    System.exit(0)
+    return null
   }
 
-  def getTwitterData(sc: SparkContext, numTweetsToCollect: Int): Any = {
-    // Initializing the number of tweets collected.
-    var numTweetsCollected = 0L
+  def constructEvidence(inFile: String, outFile: String, twitterInstance: Twitter): Unit = {
+    // Defining the Spark SQL Context.
+    val sqlContext = SparkSession.builder.master("local[*]").appName(Constants.Constants.APP_NAME).getOrCreate()
 
-    // Defining the spark streaming context.
-    val streamingContext = new StreamingContext(sc, Seconds(defaultInterval))
-
-    // Defining the configurations.
-    val twitterConfig = new twitter4j.conf.ConfigurationBuilder()
-      .setOAuthConsumerKey(config.getString("CONSUMER_KEY"))
-      .setOAuthConsumerSecret(config.getString("CONSUMER_SECRET"))
-      .setOAuthAccessToken(config.getString("ACCESS_TOKEN"))
-      .setOAuthAccessTokenSecret(config.getString("ACCESS_TOKEN_SECRET"))
-      .build
-
-    // Twitter Authorization.
-    val twitter_auth = new TwitterFactory(twitterConfig)
-    val a = new twitter4j.auth.OAuthAuthorization(twitterConfig)
-    val auth : Option[twitter4j.auth.Authorization] = Some(twitter_auth.getInstance(a).getAuthorization())
-
-    // Defining the keywords for filtering the tweets.
-    val keywordLst = config.getStringList("KEYWORDS")
-    val filter = keywordLst.toArray(Array.ofDim[String](keywordLst.size))
-
+    var reader:BufferedReader = null
     var writer:BufferedWriter = null
     try {
-      writer = new BufferedWriter(new FileWriter(new File("out/Twitter_Data.txt")))
-      val tweets = TwitterUtils.createStream(streamingContext, auth, filter).map(gson.toJson(_))
+      reader = new BufferedReader(new FileReader(new File(inFile)))
+      writer = new BufferedWriter(new FileWriter(new File(outFile)))
 
-      tweets.foreachRDD(rdd => {
-        // Iterating over each tweet.
-        rdd.collect().foreach(tweet => {
+      // Loading the tweets to a table.
+      val myTweets = sqlContext.read.json(inFile)
+      myTweets.createOrReplaceTempView(Constants.Constants.TWEETS_VIEW)
 
-          // Writing the output to a file.
-          writer.write(tweet + "\n")
+      // Querying the tweets.
+      var results = sqlContext.sql(Constants.Constants.SELECT_QUERY)
 
-          // Incrementing the tweets collected.
-          numTweetsCollected += 1
+      results.foreach(x => {
+        // Getting the user id.
+        val user = x.getAs[Long](Constants.Constants.USER)
 
-          // Stopping the process once the required tweets are collected.
-          if (numTweetsCollected >= numTweetsToCollect) {
-            println("CollectTweets :: getTwitterData :: Collected required number of tweets.")
-            writer.flush()
-            System.exit(0)
+        // Getting the verified predicate.
+        val isVerified = x.getAs[Boolean](Constants.Constants.VERIFIED)
+
+        // Getting the isPossiblySensitive predicate.
+        val isPossiblySensitive = x.getAs[Boolean](Constants.Constants.IS_POSSIBLY_SENSITIVE)
+
+
+        if (isVerified || isPossiblySensitive) {
+          // Collecting the list of friends.
+          val friends = getList(user, twitterInstance, Constants.Constants.FRIENDS)
+          for (friend <- friends) {
+            // Writing each friend to the evidence file.
+            writer.write(Constants.Constants.FRIENDS + "(" + user + "," + friend + ")")
           }
-        })
+
+          // Collecting the list of friends.
+          val followers = getList(user, twitterInstance, Constants.Constants.FRIENDS)
+          for (follower <- followers) {
+            // Writing each follower to the evidence file.
+            writer.write(Constants.Constants.FOLLOWERS + "(" + user + "," + follower + ")")
+          }
+        }
       })
 
-      // Starting the Streaming process.
-      print("CollectTweets :: getTwitterData :: Collecting Twitter tweets via streaming APIs...")
-      streamingContext.start()
-      streamingContext.awaitTermination()
-
+      print("CollectFriendsAndFollowers :: constructEvidence :: Completed constructing the evidence data.")
     } catch {
       case e: Exception =>
-        System.out.println("CollectTweets :: getTwitterData :: Exception encountered while writing to the file")
+        System.out.println("CollectFriendsAndFollowers :: constructEvidence :: Exception encountered while writing to the file")
         e.printStackTrace()
         System.exit(-1)
     } finally {
       try {
+        reader.close()
+      } catch {
+        case e:Exception => {
+          System.out.println("CollectFriendsAndFollowers :: constructEvidence :: Exception encountered while closing the BufferedReader")
+          System.exit(-1)
+        }
+      }
+      try {
         writer.close()
       } catch {
         case e:Exception => {
-          System.out.println("CollectTweets :: getTwitterData :: Exception encountered while closing the BufferedWriter")
+          System.out.println("CollectFriendsAndFollowers :: constructEvidence :: Exception encountered while closing the BufferedWriter")
           System.exit(-1)
         }
       }
     }
   }
+
+  def main(args: Array[String]) = {
+    // Validating input arguments.
+    if (args.length != 1) {
+      println("Usage: CollectFriendsAndFollowers " + "<TWEETS_IN_FILE> <TWEETS_OUT_FILE> <CONSUMER_KEY> <CONSUMER_SECRET> <ACCESS_TOKEN> <ACCESS_TOKEN_SECRET>")
+      System.exit(-1)
+    } else {
+      // Setting the configurations.
+      val configurationBuilder = new ConfigurationBuilder
+      configurationBuilder.setDebugEnabled(true)
+        .setOAuthConsumerKey(args(2))
+        .setOAuthConsumerSecret(args(3))
+        .setOAuthAccessToken(args(4))
+        .setOAuthAccessTokenSecret(args(5))
+        .setUseSSL(true)
+
+      // Creating an instance of TwitterFactory.
+      val twitterFactory = new TwitterFactory(configurationBuilder.build)
+      val twitterInstance = twitterFactory.getInstance
+      constructEvidence(args(0), args(1), twitterInstance)
+    }
+  }
+
 }

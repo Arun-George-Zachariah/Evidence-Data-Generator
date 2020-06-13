@@ -11,6 +11,8 @@ object Constants {
   val URL = "url"
   val MENTIONED_LST = "mentionedLst"
   val HASHTAGS = "hashtags"
+  val FRIENDS = "friend"
+  val FOLLOWERS = "isFollowedBy"
 
   // Predicate Constants
   val TWEETED = "tweeted"
