@@ -28,21 +28,24 @@ object Constants {
   val RETWEET_COUNT = "retweetCount"
 
   // Query Constants
-  var SELECT_QUERY = "SELECT id as " + TWEET_ID + ", "
-    "retweetCount as " + RETWEET_COUNT + ", "
-    "isPossiblySensitive as " + IS_POSSIBLY_SENSITIVE + ", "
+  var SELECT_QUERY = "SELECT id as " + TWEET_ID + ", " +
+    "retweetCount as " + RETWEET_COUNT + ", " +
+    "isPossiblySensitive as " + IS_POSSIBLY_SENSITIVE + ", " +
     "userMentionEntities as " + MENTIONED_LST + ", " +
     "hashtagEntities as  " + HASHTAGS + ", " +
     "urlEntities.expandedURL as " + URL + ", " +
     "user.id as " + USER + ", " +
     "user.isVerified as " + VERIFIED + ", " +
     "user.followersCount as " + FOLLOWERS_COUNT + ", " +
-    "user.friendsCount as " + FRIENDS_COUNT + ", "
-    "user.statusesCount as " + STATUS_COUNT + ", "
-    "retweetedStatus.id as " + RETWEETED_STATUS_ID + ", "
+    "user.friendsCount as " + FRIENDS_COUNT + ", " +
+    "user.statusesCount as " + STATUS_COUNT + ", " +
+    "retweetedStatus.id as " + RETWEETED_STATUS_ID + ", " +
     "retweetedStatus.retweetCount as " + RETWEET_COUNT + ", " +
-    "retweetedStatus.user.id as " + RETWEETED_STATUS_USER_ID + ", " +
+    "retweetedStatus.user.id as " + RETWEETED_STATUS_USER_ID + " " +
     "FROM " + TWEETS_VIEW
 
-
+  var FF_QUERY = "SELECT isPossiblySensitive as " + IS_POSSIBLY_SENSITIVE + ", " +
+    "user.id as " + USER + ", " +
+    "user.isVerified as " + VERIFIED + " " +
+    "FROM " + TWEETS_VIEW
 }

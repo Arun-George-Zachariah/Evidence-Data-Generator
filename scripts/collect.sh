@@ -34,13 +34,13 @@ while [ "$1" != "" ]; do
 done
 
 # Deleting and recreating a temporary directory for the tweets.
-rm -rvf data_in data_out data && mkdir data_in data_out
+rm -rvf ../data ../data/data_in ../data/data_tmp ../data/data_out data && mkdir ../data ../data/data_in ../data/data_tmp ../data/data_out
 
 # Reading the configuration file.
 . ../conf/app.config
 
 # Splitting the input into N splits.
-split -l $((`cat $TWEETS_FILE | wc -l`/$N)) --numeric-suffixes=1 --additional-suffix=".json" $TWEETS_FILE data_in/
+split -l $((`cat $TWEETS_FILE | wc -l`/$N)) --numeric-suffixes=1 --additional-suffix=".json" $TWEETS_FILE ../data/data_in/
 
 ## Iterating over the splits and starting the process
 for ((i=1;i<=$N;i++)); do
@@ -58,10 +58,14 @@ for ((i=1;i<=$N;i++)); do
   accessTokenSecret="ACCESS_TOKEN_SECRET_"$i
 
   # Start the process
-  echo "starting task "$i
-  task "$thing" &
+  echo "Collecting friends and followers for the split "$i
+  spark-submit --class edu.missouri.CollectFriendsAndFollowers ../target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar ../data/data_in/$file ../data/data_tmp/evidence_$i.db $consumerKey $consumerSecret $accessToken $accessTokenSecret &
 done
 
 # Waiting for all the process to finish.
 wait
+
+# Consolidating all the evidence constructed.
+cat ../data/data_tmp/evidence_*.db >> ../data/data_out/evidence.db
+
 echo "Completed collecting friends and followers"
