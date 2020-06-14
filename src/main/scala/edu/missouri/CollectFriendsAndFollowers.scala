@@ -81,7 +81,7 @@ object CollectFriendsAndFollowers {
     val sqlContext = SparkSession.builder.master("local[1]").appName(Constants.Constants.APP_NAME).getOrCreate()
 
     var reader:BufferedReader = null
-    var user: Long = null
+    var user: Long = 0
     try {
       reader = new BufferedReader(new FileReader(new File(inFile)))
 
