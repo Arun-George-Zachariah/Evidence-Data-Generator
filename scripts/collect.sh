@@ -40,7 +40,7 @@ rm -rvf ../data ../data/data_in ../data/data_tmp ../data/data_out data && mkdir 
 . ../conf/app.config
 
 # Splitting the input into N splits.
-split -l $((`cat $TWEETS_FILE | wc -l`/$N)) --numeric-suffixes=1 --additional-suffix=".json" $TWEETS_FILE ../data/data_in/
+split -l $(((`cat $TWEETS_FILE | wc -l`/$N) + 1)) --numeric-suffixes=1 --additional-suffix=".json" $TWEETS_FILE ../data/data_in/
 
 ## Iterating over the splits and starting the process
 for ((i=1;i<=$N;i++)); do
@@ -67,5 +67,7 @@ wait
 
 # Consolidating all the evidence constructed.
 cat ../data/data_tmp/evidence_*.db >> ../data/data_out/evidence.db
+
+#To Do: A way to get a list of failed user id's.
 
 echo "Completed collecting friends and followers"

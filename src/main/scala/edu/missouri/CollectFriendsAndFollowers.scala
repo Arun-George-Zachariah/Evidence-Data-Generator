@@ -81,6 +81,7 @@ object CollectFriendsAndFollowers {
     val sqlContext = SparkSession.builder.master("local[1]").appName(Constants.Constants.APP_NAME).getOrCreate()
 
     var reader:BufferedReader = null
+    val user = null
     try {
       reader = new BufferedReader(new FileReader(new File(inFile)))
 
@@ -93,7 +94,7 @@ object CollectFriendsAndFollowers {
 
       results.foreach(x => {
         // Getting the user id.
-        val user = x.getAs[Long](Constants.Constants.USER)
+        user = x.getAs[Long](Constants.Constants.USER)
 
         // Getting the verified predicate.
         val isVerified = x.getAs[Boolean](Constants.Constants.VERIFIED)
@@ -114,7 +115,7 @@ object CollectFriendsAndFollowers {
       print("CollectFriendsAndFollowers :: constructEvidence :: Completed constructing the evidence data.")
     } catch {
       case e: Exception =>
-        System.out.println("CollectFriendsAndFollowers :: constructEvidence :: Exception encountered while writing to the file")
+        System.out.println("CollectFriendsAndFollowers :: constructEvidence :: Exception encountered while writing to the file for the user id :: " + user)
         e.printStackTrace()
         System.exit(-1)
     } finally {
