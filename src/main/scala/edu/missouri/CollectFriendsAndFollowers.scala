@@ -7,34 +7,31 @@ import twitter4j.{IDs, Twitter, TwitterException, TwitterFactory}
 
 object CollectFriendsAndFollowers {
   def writeEvidence(user: Long, twitterInstance: Twitter, listType: String, outFile: String): Unit = {
-    System.out.println("CollectFriendsAndFollowers :: writeEvidence :: user :: " + user + " listType :: " + listType)
+    System.out.println("CollectFriendsAndFollowers :: writeEvidence :: user :: " + user + " :: listType :: " + listType + " :: outFile :: " + outFile)
 
     var collectedIds = null: IDs
 
     var writer:BufferedWriter = null
     try {
-      writer = new BufferedWriter(new FileWriter(new File(outFile)))
+      writer = new BufferedWriter(new FileWriter(new File(outFile), true))
 
       while(true) {
         try {
           if (listType.equalsIgnoreCase(Constants.Constants.FRIENDS)) {
-            System.out.println("entering :: friends")
             collectedIds = twitterInstance.getFriendsIDs(user, -1)
-            System.out.println("entering :: after")
           } else if (listType.equalsIgnoreCase(Constants.Constants.FOLLOWERS)) {
-            collectedIds = twitterInstance.getFollowersIDs(user)
+            collectedIds = twitterInstance.getFollowersIDs(user, -1)
           } else {
             System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Unidentified Type.")
             return
           }
 
-          System.out.println("entering :: collectedIds"+ collectedIds)
-
           // Writes a list of upto 5000 friends and followers. (Reference http://twitter4j.org/oldjavadocs/2.2.6/twitter4j/api/FriendsFollowersMethods.html)
           var ids = collectedIds.getIDs.iterator
           for ( id <- ids) {
-            System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Adding friend :: " + id)
+            System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Adding :: " + listType + " :: " + id)
             writer.write(listType + "(" + user + "," + id + ")" + "\n")
+            writer.flush()
           }
 
           return
@@ -42,17 +39,17 @@ object CollectFriendsAndFollowers {
           case e: TwitterException => {
             System.out.println("CollectFriendsAndFollowers :: getList :: Twitter exception while processing user id :: " + user)
 
-            // Return back, if the user id is not found.
-            if(e.resourceNotFound() == true && e.getErrorCode() == 34 && e.getStatusCode() == 404){
-              System.out.println("CollectFriendsAndFollowers :: getList :: User not found.")
+            // Waiting for the limit to be replenished.
+            if(e.getRateLimitStatus != null) {
+              var waitTime = Math.abs(e.getRateLimitStatus.getSecondsUntilReset)
+              Thread.sleep(waitTime * 1000)
+            } else {
+              System.out.println("CollectFriendsAndFollowers :: getList :: Irrevocable twitter exception while processing user id :: " + user)
               return
             }
 
-            // Waiting for limit to be reset.
-            var waitTime = Math.abs(e.getRateLimitStatus.getSecondsUntilReset)
-            Thread.sleep(waitTime * 1000)
           } case e: Exception => {
-            System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Unknown exception encountered")
+            System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Unknown exception encountered for the user id :: " + user)
             e.printStackTrace()
             return
           }
@@ -61,7 +58,7 @@ object CollectFriendsAndFollowers {
 
     } catch {
       case e: Exception =>
-        System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Exception encountered while writing to the file")
+        System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Exception encountered while writing to the file for the user id :: " + user)
         e.printStackTrace()
         System.exit(-1)
     } finally {
@@ -69,7 +66,7 @@ object CollectFriendsAndFollowers {
         writer.close()
       } catch {
         case e:Exception => {
-          System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Exception encountered while closing the BufferedWriter")
+          System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Exception encountered while closing the BufferedWriter for the user id :: " + user)
           System.exit(-1)
         }
       }
@@ -123,7 +120,7 @@ object CollectFriendsAndFollowers {
         reader.close()
       } catch {
         case e:Exception => {
-          System.out.println("CollectFriendsAndFollowers :: constructEvidence :: Exception encountered while closing the BufferedReader")
+          System.out.println("CollectFriendsAndFollowers :: constructEvidence :: Exception encountered while closing the BufferedReader for the user id :: " + user)
           System.exit(-1)
         }
       }

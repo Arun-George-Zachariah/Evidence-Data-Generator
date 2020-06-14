@@ -46,9 +46,9 @@ split -l $(((`cat $TWEETS_FILE | wc -l`/$N) + 1)) --numeric-suffixes=1 --additio
 for ((i=1;i<=$N;i++)); do
   # Obtaining the file name
   if (( i < 10 )); then
-    file=data_in/0$i.json
+    file=../data/data_in/0$i.json
   else
-    file=data_in/$i.json
+    file=../data/data_in/$i.json
   fi
 
   # Obtaining the secret keys.
@@ -59,7 +59,7 @@ for ((i=1;i<=$N;i++)); do
 
   # Start the process
   echo "Collecting friends and followers for the split "$i
-  spark-submit --class edu.missouri.CollectFriendsAndFollowers ../target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar ../data/data_in/$file ../data/data_tmp/evidence_$i.db $consumerKey $consumerSecret $accessToken $accessTokenSecret &
+  spark-submit --class edu.missouri.CollectFriendsAndFollowers ../target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar $file ../data/data_tmp/evidence_$i.db ${!consumerKey} ${!consumerSecret} ${!accessToken} ${!accessTokenSecret} &
 done
 
 # Waiting for all the process to finish.
