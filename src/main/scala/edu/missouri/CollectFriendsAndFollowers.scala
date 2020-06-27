@@ -44,6 +44,7 @@ object CollectFriendsAndFollowers {
             // Waiting for the limit to be replenished.
             if(e.getRateLimitStatus != null) {
               var waitTime = Math.abs(e.getRateLimitStatus.getSecondsUntilReset)
+              System.out.println("CollectFriendsAndFollowers :: getList :: Waiting for :: " + waitTime + " :: seconds until rate limit is reset.")
               Thread.sleep(waitTime * 1000)
             } else {
               System.out.println("CollectFriendsAndFollowers :: getList :: Irrevocable twitter exception while processing user id :: " + user)
