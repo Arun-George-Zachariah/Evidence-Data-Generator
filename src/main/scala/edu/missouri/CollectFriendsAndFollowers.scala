@@ -37,6 +37,8 @@ object CollectFriendsAndFollowers {
           return
         } catch {
           case e: TwitterException => {
+            System.out.println("CollectFriendsAndFollowers :: getList :: Exception encountered :: ")
+            e.printStackTrace()
             System.out.println("CollectFriendsAndFollowers :: getList :: Twitter exception while processing user id :: " + user)
 
             // Waiting for the limit to be replenished.
@@ -67,6 +69,7 @@ object CollectFriendsAndFollowers {
       } catch {
         case e:Exception => {
           System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Exception encountered while closing the BufferedWriter for the user id :: " + user)
+          e.printStackTrace()
           System.exit(-1)
         }
       }
@@ -121,6 +124,7 @@ object CollectFriendsAndFollowers {
       } catch {
         case e:Exception => {
           System.out.println("CollectFriendsAndFollowers :: constructEvidence :: Exception encountered while closing the BufferedReader for the user id :: " + user)
+          e.printStackTrace()
           System.exit(-1)
         }
       }
