@@ -48,4 +48,6 @@ object Constants {
     "user.id as " + USER + ", " +
     "user.isVerified as " + VERIFIED + " " +
     "FROM " + TWEETS_VIEW
+
+  var USER_ID_QUERY = "SELECT DISTINCT user.id as " + USER + " FROM " + TWEETS_VIEW
 }
