@@ -63,14 +63,14 @@ for ((i=1;i<=$N;i++)); do
   accessTokenSecret="ACCESS_TOKEN_SECRET_"$i
 
   # Start the process
-#  echo "Collecting friends and followers for the split "$i
-#  spark-submit --class edu.missouri.CollectFriendsAndFollowers ../target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar $file ../data/data_tmp/evidence_$i.db ${!consumerKey} ${!consumerSecret} ${!accessToken} ${!accessTokenSecret} &
+  echo "Collecting friends and followers for the split "$i
+  spark-submit --class edu.missouri.CollectFriendsAndFollowers ../target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar $file ../data/data_tmp/evidence_$i.db ${!consumerKey} ${!consumerSecret} ${!accessToken} ${!accessTokenSecret} &
 done
 
 # Waiting for all the process to finish.
 wait
 
 # Consolidating all the evidence constructed.
-#cat ../data/data_tmp/evidence_*.db >> ../data/data_out/evidence.db
+cat ../data/data_tmp/evidence_*.db >> ../data/data_out/evidence.db
 
 echo "Completed collecting friends and followers"
