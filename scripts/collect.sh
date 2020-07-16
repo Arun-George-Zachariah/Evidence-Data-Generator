@@ -52,10 +52,8 @@ for ((i=1;i<=$N;i++)); do
   # Obtaining the file name
   if (( i < 10 )); then
     file=../data/data_in/0$i.txt
-    log=../data/data_in/0$i.log
   else
     file=../data/data_in/$i.txt
-    log=../data/data_in/$i.log
   fi
 
   # Obtaining the secret keys.
@@ -66,7 +64,7 @@ for ((i=1;i<=$N;i++)); do
 
   # Start the process
   echo "Collecting friends and followers for the split "$i
-  spark-submit --class edu.missouri.CollectFriendsAndFollowers ../target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar $file ../data/data_tmp/evidence_$i.db ${!consumerKey} ${!consumerSecret} ${!accessToken} ${!accessTokenSecret} > $log 2>&1
+  spark-submit --class edu.missouri.CollectFriendsAndFollowers ../target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar $file ../data/data_tmp/evidence_$i.db ${!consumerKey} ${!consumerSecret} ${!accessToken} ${!accessTokenSecret} &
 done
 
 # Waiting for all the process to finish.

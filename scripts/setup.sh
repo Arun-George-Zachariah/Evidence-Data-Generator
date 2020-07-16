@@ -31,7 +31,7 @@ sudo apt-get update
 sudo apt-get install sbt
 
 # Setting up Spark.
-cd $HOME && wget http://apache.mirrors.hoobly.com/spark/spark-2.4.5/spark-2.4.5-bin-hadoop2.7.tgz
+cd $HOME && wget https://archive.apache.org/dist/spark/spark-2.4.5/spark-2.4.5-bin-hadoop2.7.tgz
 tar -xvf spark-2.4.5-bin-hadoop2.7.tgz
 
 # Adding Spark to the path.

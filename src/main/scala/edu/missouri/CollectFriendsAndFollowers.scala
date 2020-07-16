@@ -3,7 +3,7 @@ package edu.missouri
 import java.io.{BufferedReader, BufferedWriter, File, FileReader, FileWriter}
 
 import twitter4j.conf.ConfigurationBuilder
-import twitter4j.{IDs, Twitter, TwitterException, TwitterFactory}
+import twitter4j.{IDs, TwitterException, TwitterFactory}
 
 object CollectFriendsAndFollowers {
   def writeEvidence(user: Long, consumerKey: String, consumerSecret: String, accessToken: String, accessTokenSecret: String, listType: String, outFile: String): Unit = {
@@ -50,7 +50,8 @@ object CollectFriendsAndFollowers {
             writer.flush()
           }
 
-          twitterInstance.shutdown()
+          System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Completed collecting " + listType + " for the user :: " + user)
+          return
         } catch {
           case e: TwitterException => {
             System.out.println("CollectFriendsAndFollowers :: getList :: Exception encountered :: ")
@@ -59,11 +60,9 @@ object CollectFriendsAndFollowers {
 
             // Waiting for the limit to be replenished.
             if(e.getRateLimitStatus != null) {
-              System.out.println("Arun :: Old :: " + System.currentTimeMillis()/1000)
               var waitTime = Math.abs(e.getRateLimitStatus.getSecondsUntilReset)
               System.out.println("CollectFriendsAndFollowers :: getList :: Waiting for :: " + waitTime + " :: seconds until rate limit is reset.")
               Thread.sleep((waitTime + 20) * 1000)
-              System.out.println("Arun :: New :: " + System.currentTimeMillis()/1000)
             } else {
               System.out.println("CollectFriendsAndFollowers :: getList :: Irrevocable twitter exception while processing user id :: " + user)
               return
@@ -83,6 +82,7 @@ object CollectFriendsAndFollowers {
         e.printStackTrace()
         System.exit(-1)
     } finally {
+      twitterInstance.shutdown()
       try {
         writer.close()
       } catch {
