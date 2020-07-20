@@ -58,16 +58,22 @@ object CollectFriendsAndFollowers {
             e.printStackTrace()
             System.out.println("CollectFriendsAndFollowers :: getList :: Twitter exception while processing user id :: " + user)
 
-            // Waiting for the limit to be replenished.
-            if(e.getRateLimitStatus != null) {
-              var waitTime = Math.abs(e.getRateLimitStatus.getSecondsUntilReset)
-              System.out.println("CollectFriendsAndFollowers :: getList :: Waiting for :: " + waitTime + " :: seconds until rate limit is reset.")
-              Thread.sleep((waitTime + 20) * 1000)
+            // Looping over, only on rate limit error.
+            if(e.getErrorCode == Constants.Constants.RATE_LIMIT_ERROR) {
+              // Waiting for the limit to be replenished.
+              if(e.getRateLimitStatus != null) {
+                var waitTime = Math.abs(e.getRateLimitStatus.getSecondsUntilReset)
+                System.out.println("CollectFriendsAndFollowers :: getList :: Waiting for :: " + waitTime + " :: seconds until rate limit is reset.")
+                Thread.sleep((waitTime + 20) * 1000)
+              } else {
+                System.out.println("CollectFriendsAndFollowers :: getList :: Rate limit status not found while processing user id :: " + user)
+                return
+              }
             } else {
               System.out.println("CollectFriendsAndFollowers :: getList :: Irrevocable twitter exception while processing user id :: " + user)
               return
             }
-
+            
           } case e: Exception => {
             System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Unknown exception encountered for the user id :: " + user)
             e.printStackTrace()

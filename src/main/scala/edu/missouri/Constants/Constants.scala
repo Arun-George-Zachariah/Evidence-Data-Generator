@@ -27,6 +27,9 @@ object Constants {
   val STATUS_COUNT = "statusesCount"
   val RETWEET_COUNT = "retweetCount"
 
+  // Error Codes
+  val RATE_LIMIT_ERROR = 88
+
   // Query Constants
   var SELECT_QUERY = "SELECT id as " + TWEET_ID + ", " +
     "retweetCount as " + RETWEET_COUNT + ", " +
