@@ -82,6 +82,7 @@ object CollectFriendsAndFollowers {
         e.printStackTrace()
         System.exit(-1)
     } finally {
+      System.out.println("CollectFriendsAndFollowers :: writeEvidence :: Shutting down twitter instance.")
       twitterInstance.shutdown()
       try {
         writer.close()

@@ -52,6 +52,6 @@ object GenerateUserIds {
         }
       }
     })
-    System.out.println("GenerateUserIds :: userIdList length :: End")
+    System.out.println("GenerateUserIds :: getUserIds :: End")
   }
 }
