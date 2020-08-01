@@ -45,6 +45,6 @@ sbt publishLocal && sbt clean assembly
     The constructed evidence for friends and followers would be present at `data/data_out/evidence.db`
 
 ## References
-* Praveen Rao, Anas Katib, Charles Kamhoua, Kevin Kwiat, and Laurent Njilla. "Probabilistic Inference on Twitter Data to Discover Suspicious Users and Malicious Content." In the 2nd IEEE International Symposium on Security and Privacy in Social Networks and Big Data (SocialSec 2016), pages 407-414, Nadi, Fiji, December 2016. [PDF](http://r.web.umkc.edu/raopr/SocialKB-SocialSec-2016.pdf) [Code](https://github.com/UMKC-BigDataLab/SocialKB)
-* Monica Senapati, Laurent Njilla, Praveen Rao. "A Method for Scalable First-Order Rule Learning on Twitter Data." In Proc. of 35th IEEE International Conference on Data Engineering Workshops (ICDEW) , pages 274-277, Macau, China, 2019.[PDF](http://r.web.umkc.edu/raopr/SRLearn-ICDEW-2019.pdf)
+* Praveen Rao, Anas Katib, Charles Kamhoua, Kevin Kwiat, and Laurent Njilla. "Probabilistic Inference on Twitter Data to Discover Suspicious Users and Malicious Content." In the 2nd IEEE International Symposium on Security and Privacy in Social Networks and Big Data (SocialSec 2016), pages 407-414, Nadi, Fiji, December 2016. [[PDF](http://r.web.umkc.edu/raopr/SocialKB-SocialSec-2016.pdf)] [[Code](https://github.com/UMKC-BigDataLab/SocialKB)]
+* Monica Senapati, Laurent Njilla, Praveen Rao. "A Method for Scalable First-Order Rule Learning on Twitter Data." In Proc. of 35th IEEE International Conference on Data Engineering Workshops (ICDEW) , pages 274-277, Macau, China, 2019.[[PDF](http://r.web.umkc.edu/raopr/SRLearn-ICDEW-2019.pdf)]
     
