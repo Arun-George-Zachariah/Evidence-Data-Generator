@@ -6,7 +6,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Row
 
 object GenerateEvidence {
-  def constructEvidence(inFile: String): Unit = {
+  def constructEvidence(inFile: String, outFile: String): Unit = {
     // Defining the Spark SQL Context.
     val sqlContext = SparkSession.builder.master("local[*]").appName(Constants.Constants.APP_NAME).getOrCreate()
 
@@ -14,7 +14,7 @@ object GenerateEvidence {
     var writer:BufferedWriter = null
     try {
       reader = new BufferedReader(new FileReader(new File(inFile)))
-      writer = new BufferedWriter(new FileWriter(new File("out/evidence.db")))
+      writer = new BufferedWriter(new FileWriter(new File(outFile)))
 
       // Loading the tweets to a table.
       val myTweets = sqlContext.read.json(inFile)
@@ -23,55 +23,61 @@ object GenerateEvidence {
       // Querying the tweets.
       var results = sqlContext.sql(Constants.Constants.SELECT_QUERY)
 
+      // Creating a string build and broadcasting it across workers.
+      val driverSB = StringBuilder.newBuilder
+      val sbBroadcast = sqlContext.sparkContext.broadcast(driverSB)
+
       results.foreach(x => {
+        val sb = new StringBuilder()
+
         // tweeted predicate
         val user = x.getAs[Long](Constants.Constants.USER)
         val tweetId = x.getAs[Long](Constants.Constants.TWEET_ID)
-        writer.write(Constants.Constants.TWEETED + "(" + user + "," + tweetId + ")")
+        sb.append(Constants.Constants.TWEETED + "(" + user + "," + tweetId + ")" + "\n")
 
         // verified predicate
         val isVerified = x.getAs[Boolean](Constants.Constants.VERIFIED)
         if (isVerified) {
-          writer.write(Constants.Constants.VERIFIED + "(" + user + ")")
+          sb.append(Constants.Constants.VERIFIED + "(" + user + ")" + "\n")
         }
 
         val retweetedStatusId = x.getAs[Long](Constants.Constants.RETWEETED_STATUS_ID)
         if (retweetedStatusId != null) {
           // retweeted predicate
-          writer.write(Constants.Constants.RETWEETED + "(" + user + "," + retweetedStatusId + ")")
+          sb.append(Constants.Constants.RETWEETED + "(" + user + "," + retweetedStatusId + ")" + "\n")
 
           // tweeted predicate
           val retweetedStatusUserId = x.getAs[Long](Constants.Constants.RETWEETED_STATUS_USER_ID)
-          writer.write(Constants.Constants.TWEETED + "(" + retweetedStatusUserId + "," + retweetedStatusId + ")")
+          sb.append(Constants.Constants.TWEETED + "(" + retweetedStatusUserId + "," + retweetedStatusId + ")" + "\n")
 
           // retweetCount predicate
           val retweetedStatusRetweetCount = x.getAs[Long](Constants.Constants.RETWEET_COUNT)
-          writer.write(Constants.Constants.RETWEET_COUNT + "(" + retweetedStatusId + "," + retweetedStatusRetweetCount + ")")
+          sb.append(Constants.Constants.RETWEET_COUNT + "(" + retweetedStatusId + "," + retweetedStatusRetweetCount + ")" + "\n")
         }
 
         // isPossiblySensitive predicate
         val isPossiblySensitive = x.getAs[Boolean](Constants.Constants.IS_POSSIBLY_SENSITIVE)
         if (isPossiblySensitive) {
-          writer.write(Constants.Constants.IS_POSSIBLY_SENSITIVE + "(" + tweetId + ")")
+          sb.append(Constants.Constants.IS_POSSIBLY_SENSITIVE + "(" + tweetId + ")" + "\n")
         }
 
         // statusesCount predicate
         val statusCount = x.getAs[Long](Constants.Constants.STATUS_COUNT)
-        writer.write(Constants.Constants.STATUS_COUNT + "(" + user + "," + statusCount + ")")
+        sb.append(Constants.Constants.STATUS_COUNT + "(" + user + "," + statusCount + ")" + "\n")
 
         // friendsCount predicate
-        val friendsCount = x.getAs[Int](Constants.Constants.FRIENDS_COUNT)
-        writer.write(Constants.Constants.FRIENDS_COUNT + "(" + user + "," + friendsCount + ")")
+        val friendsCount = x.getAs[Long](Constants.Constants.FRIENDS_COUNT)
+        sb.append(Constants.Constants.FRIENDS_COUNT + "(" + user + "," + friendsCount + ")" + "\n")
 
         // followersCount Predicate
-        val followersCount = x.getAs[Int](Constants.Constants.FOLLOWERS_COUNT)
-        writer.write(Constants.Constants.FOLLOWERS_COUNT + "(" + user + "," + followersCount + ")")
+        val followersCount = x.getAs[Long](Constants.Constants.FOLLOWERS_COUNT)
+        sb.append(Constants.Constants.FOLLOWERS_COUNT + "(" + user + "," + followersCount + ")" + "\n")
 
         // containsLink Predicate
         var links = x.getAs[Seq[String]](Constants.Constants.URL)
         if(links != null && links.length > 0) {
           for(link <- links) {
-            writer.write(Constants.Constants.CONTAINS_LINK + "(" + tweetId + "," + link + ")")
+            sb.append(Constants.Constants.CONTAINS_LINK + "(" + tweetId + "," + link + ")" + "\n")
           }
         }
 
@@ -79,7 +85,7 @@ object GenerateEvidence {
         var metionedLst = x.getAs[Seq[Row]](Constants.Constants.MENTIONED_LST)
         if(metionedLst != null && metionedLst.length > 0) {
           for(mentions <- metionedLst) {
-            writer.write(Constants.Constants.MENTIONS + "(" + tweetId + "," + mentions.getAs[Long]("id") + ")")
+            sb.append(Constants.Constants.MENTIONS + "(" + tweetId + "," + mentions.getAs[Long]("id") + ")" + "\n")
           }
         }
 
@@ -87,14 +93,16 @@ object GenerateEvidence {
         var hashtags = x.getAs[Seq[Row]](Constants.Constants.HASHTAGS)
         if(hashtags != null && hashtags.length > 0) {
           for(hashtag <- hashtags) {
-            writer.write(Constants.Constants.CONTAINS_HASHTAG + "(" + tweetId + "," + hashtag.getAs[String]("text") + ")")
+            sb.append(Constants.Constants.CONTAINS_HASHTAG + "(" + tweetId + "," + hashtag.getAs[String]("text") + ")" + "\n")
           }
         }
 
+        // Writing to the broadcasted string builder.
+        sbBroadcast.value.append(sb.toString())
       })
 
-      // Starting the Streaming process.
-      print("CollectTweets :: getTwitterData :: Collecting Twitter tweets via streaming APIs...")
+      // Consolidating all the evidence to a file.
+      writer.write(sbBroadcast.value.toString())
     } catch {
       case e: Exception =>
         System.out.println("GenerateEvidence :: constructEvidence :: Exception encountered while writing to the file")
@@ -122,11 +130,12 @@ object GenerateEvidence {
 
   def main(args: Array[String]) = {
     // Validating input arguments.
-    if (args.length != 1) {
-      println("Usage: GenerateEvidence " + "<TWEETS_FILE> ")
+    if (args.length != 2) {
+      println("Usage: GenerateEvidence " + "<TWEETS_FILE> <EVIDENCE_OUT_FILE>")
       System.exit(-1)
     } else {
-      constructEvidence(args(0))
+      // Note: The string evidence needs to be converted to a data frame and then written to a file.
+      constructEvidence(args(0), args(1))
     }
   }
 
