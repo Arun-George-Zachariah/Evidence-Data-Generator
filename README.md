@@ -1,20 +1,26 @@
 # Evidence-Data-Generator
 Evidence-Data-Generator holds redesigned versions of the utility code used for constructing an evidence dataset from tweets, collected from [Twitter](https://twitter.com), which could be used with various MLN inference tools such as [Tuffy](http://i.stanford.edu/hazy/tuffy/)
 
-## Generate Evidence
-* To setup:
-    ```
-    cd scripts && source setup.sh
-    ```
-  
+## Environment Setup
+```
+cd scripts && source setup.sh
+```
+
+## Build the Code
+```
+sbt publishLocal && sbt clean assembly
+```
+
+
+## Generate Evidence  
 * To collect tweets:
     ```
-    spark-submit --name edu.missouri.CollectTweets target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar <NO_OF_TWEETS> <TWEETS_OUT_FILE>
+    spark-submit --class edu.missouri.CollectTweets target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar <NO_OF_TWEETS> <TWEETS_OUT_FILE>
     ```
 
     Eg:
     ```
-    spark-submit --name edu.missouri.CollectTweets target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar 1000 /mydata/tweets.json
+    spark-submit --class edu.missouri.CollectTweets target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar 1000 /mydata/tweets.json
     ```
 
 * To construct evidence:
