@@ -7,7 +7,8 @@ scalaVersion := "2.11.8"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "2.2.0",
   "org.apache.spark" %% "spark-streaming-twitter" % "1.3.1",
-  "org.apache.spark" %% "spark-streaming" % "1.6.1"
+  "org.apache.spark" %% "spark-streaming" % "1.6.1",
+  "com.typesafe" % "config" % "1.4.0"
 )
 
 assemblyMergeStrategy in assembly := {
