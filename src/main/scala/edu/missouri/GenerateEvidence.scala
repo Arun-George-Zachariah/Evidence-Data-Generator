@@ -42,7 +42,7 @@ object GenerateEvidence {
         }
 
         val retweetedStatusId = x.getAs[Long](Constants.Constants.RETWEETED_STATUS_ID)
-        if (retweetedStatusId != null) {
+        if (retweetedStatusId != 0) {
           // retweeted predicate
           sb.append(Constants.Constants.RETWEETED + "(" + user + "," + retweetedStatusId + ")" + "\n")
 
@@ -51,7 +51,7 @@ object GenerateEvidence {
           sb.append(Constants.Constants.TWEETED + "(" + retweetedStatusUserId + "," + retweetedStatusId + ")" + "\n")
 
           // retweetCount predicate
-          val retweetedStatusRetweetCount = x.getAs[Long](Constants.Constants.RETWEET_COUNT)
+          val retweetedStatusRetweetCount = x.getAs[Long](Constants.Constants.RETWEETED_STATUS_RETWEET_COUNT)
           sb.append(Constants.Constants.RETWEET_COUNT + "(" + retweetedStatusId + "," + retweetedStatusRetweetCount + ")" + "\n")
         }
 

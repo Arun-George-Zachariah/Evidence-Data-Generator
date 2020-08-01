@@ -13,6 +13,7 @@ object Constants {
   val HASHTAGS = "hashtags"
   val FRIENDS = "friend"
   val FOLLOWERS = "isFollowedBy"
+  val RETWEETED_STATUS_RETWEET_COUNT = "retweetedStatusRetweetCount"
 
   // Predicate Constants
   val TWEETED = "tweeted"
@@ -43,7 +44,7 @@ object Constants {
     "user.friendsCount as " + FRIENDS_COUNT + ", " +
     "user.statusesCount as " + STATUS_COUNT + ", " +
     "retweetedStatus.id as " + RETWEETED_STATUS_ID + ", " +
-    "retweetedStatus.retweetCount as " + RETWEET_COUNT + ", " +
+    "retweetedStatus.retweetCount as " + RETWEETED_STATUS_RETWEET_COUNT + ", " +
     "retweetedStatus.user.id as " + RETWEETED_STATUS_USER_ID + " " +
     "FROM " + TWEETS_VIEW
 

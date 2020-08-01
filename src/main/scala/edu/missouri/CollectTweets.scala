@@ -21,20 +21,20 @@ object CollectTweets {
     val sc = new SparkContext(conf)
 
     // Validating input arguments.
-    if(args.length != 1) {
-      println("Usage: " + "CollectTweets  <NUM_TO_COLLECT>")
+    if(args.length != 2) {
+      println("Usage: " + "CollectTweets  <NUM_TO_COLLECT> <OUT_FILE>")
       System.exit(-1)
     }
 
     // Streaming Twitter Data.
-    getTwitterData(sc, args(0).toInt)
+    getTwitterData(sc, args(0).toInt, args(1))
 
     // Stop and exit.
     sc.stop()
     System.exit(0)
   }
 
-  def getTwitterData(sc: SparkContext, numTweetsToCollect: Int): Any = {
+  def getTwitterData(sc: SparkContext, numTweetsToCollect: Int, outFile: String): Any = {
     // Initializing the number of tweets collected.
     var numTweetsCollected = 0L
 
@@ -60,7 +60,7 @@ object CollectTweets {
 
     var writer:BufferedWriter = null
     try {
-      writer = new BufferedWriter(new FileWriter(new File("out/Twitter_Data.txt")))
+      writer = new BufferedWriter(new FileWriter(new File(outFile)))
       val tweets = TwitterUtils.createStream(streamingContext, auth, filter).map(gson.toJson(_))
 
       tweets.foreachRDD(rdd => {
