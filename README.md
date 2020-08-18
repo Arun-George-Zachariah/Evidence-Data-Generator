@@ -13,6 +13,8 @@ sbt publishLocal && sbt clean assembly
 
 
 ## Generate Evidence  
+* Update `conf/app.config` with the twitter keys and keywords.
+
 * To collect tweets:
     ```
     spark-submit --class edu.missouri.CollectTweets target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar <NO_OF_TWEETS> <TWEETS_OUT_FILE>
