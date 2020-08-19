@@ -38,12 +38,12 @@ sbt publishLocal && sbt clean assembly
 
 * To collect friends and followers:
     ```
-    cd scripts && bash collect.sh bash collect.sh -tweets <TWEETS_FILE> -n <NO_OF_THREADS>
+    cd scripts && bash collect.sh -tweets <TWEETS_FILE> -n <NO_OF_THREADS>
     ```
     
     Eg:
     ```
-    cd scripts && bash collect.sh bash collect.sh -tweets /mydata/tweets.json -n 10
+    cd scripts && bash collect.sh -tweets /mydata/tweets.json -n 10
     ```
     The constructed evidence for friends and followers would be present at `data/data_out/evidence.db`
 
