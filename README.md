@@ -24,10 +24,11 @@ sbt publishLocal && sbt clean assembly
     ```
     spark-submit --class edu.missouri.CollectTweets target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar 1000 /mydata/tweets.json
     ```
+    **Note**: There could be duplicate tweets, which can be filtered using `sort <TWEETS_OUT_FILE> | uniq -u >> <UNIQUE_TWEETS_OUT_FILE>`
 
 * To construct evidence:
     ```
-    spark-submit --class edu.missouri.GenerateEvidence --driver-memory <DRIVER_MEMORY> target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar <TWEETS_INP_FILE> <EVIDENCE_OUT_FILE>
+    spark-submit --class edu.missouri.GenerateEvidence --driver-memory <DRIVER_MEMORY> target/scala-2.11/Evidence-Data-Generator-assembly-0.1.jar <TWEETS_FILE> <EVIDENCE_OUT_FILE>
     ```
     
     Eg:
@@ -37,7 +38,7 @@ sbt publishLocal && sbt clean assembly
 
 * To collect friends and followers:
     ```
-    cd scripts && bash collect.sh bash collect.sh -tweets <TWEETS_INP_FILE> -n <NO_OF_THREADS>
+    cd scripts && bash collect.sh bash collect.sh -tweets <TWEETS_FILE> -n <NO_OF_THREADS>
     ```
     
     Eg:
