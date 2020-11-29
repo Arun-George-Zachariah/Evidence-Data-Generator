@@ -8,7 +8,7 @@ object ConvertToCSV {
 
   def convertToCSV(inFile: String, outFile: String): Unit = {
     // Defining the Spark SQL Context.
-    val sqlContext = SparkSession.builder.master("local[*]").appName(Constants.Constants.APP_NAME).getOrCreate()
+    val sqlContext = SparkSession.builder.master("local").appName(Constants.Constants.APP_NAME).getOrCreate()
 
     var reader:BufferedReader = null
     var writer:BufferedWriter = null
@@ -27,7 +27,7 @@ object ConvertToCSV {
       val driverSB = StringBuilder.newBuilder
 
       // Adding the header details.
-      driverSB.append("UserId,TweetId,Verified,RetweetedStatusId,RetweetedUserId,RetweetedStatusRetweetCount,PossiblySensitive,StatusCount,FriendsCount,FollowersCount,Link,Mentions,Hashtag")
+      driverSB.append("UserId,TweetId,Verified,RetweetedStatusId,RetweetedUserId,RetweetedStatusRetweetCount,PossiblySensitive,StatusCount,FriendsCount,FollowersCount,Link,Mentions,Hashtag\n")
 
       // Broadcasting the string builder across workers.
       val sbBroadcast = sqlContext.sparkContext.broadcast(driverSB)
@@ -107,11 +107,11 @@ object ConvertToCSV {
             //TODO Need to understand how to add hashtags in the CSV, as the size would vary.
             lastHashtag = hashtag.getAs[String]("text")
           }
-          sb.append(lastHashtag + "\n")
+          sb.append(lastHashtag)
         }
 
         // Writing to the broadcasted string builder.
-        sbBroadcast.value.append(sb.toString())
+        sbBroadcast.value.append(sb.append("\n").toString())
       })
 
       // Consolidating all the evidence to a file.
