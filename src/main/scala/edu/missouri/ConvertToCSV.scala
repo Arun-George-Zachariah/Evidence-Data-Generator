@@ -107,7 +107,7 @@ object ConvertToCSV {
             //TODO Need to understand how to add hashtags in the CSV, as the size would vary.
             lastHashtag = hashtag.getAs[String]("text")
           }
-          sb.append(lastHashtag)
+          sb.append(lastHashtag + "\n")
         }
 
         // Writing to the broadcasted string builder.
