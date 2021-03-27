@@ -54,4 +54,7 @@ object Constants {
     "FROM " + TWEETS_VIEW
 
   var USER_ID_QUERY = "SELECT DISTINCT user.id as " + USER + " FROM Tweets WHERE  user.isVerified = true OR isPossiblySensitive = true"
+
+  var TWEET_ID_QUERY = "SELECT DISTINCT id " + TWEET_ID + " FROM Tweets"
+
 }
