@@ -82,9 +82,9 @@ object GenerateEvidence {
         }
 
         // mentions Predicate
-        var metionedLst = x.getAs[Seq[Row]](Constants.Constants.MENTIONED_LST)
-        if(metionedLst != null && metionedLst.length > 0) {
-          for(mentions <- metionedLst) {
+        var mentionedLst = x.getAs[Seq[Row]](Constants.Constants.MENTIONED_LST)
+        if(mentionedLst != null && mentionedLst.length > 0) {
+          for(mentions <- mentionedLst) {
             sb.append(Constants.Constants.MENTIONS + "(" + tweetId + "," + mentions.getAs[Long]("id") + ")" + "\n")
           }
         }
