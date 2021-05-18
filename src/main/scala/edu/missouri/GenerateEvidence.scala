@@ -77,7 +77,7 @@ object GenerateEvidence {
         var links = x.getAs[Seq[String]](Constants.Constants.URL)
         if(links != null && links.length > 0) {
           for(link <- links) {
-            sb.append(Constants.Constants.CONTAINS_LINK + "(" + tweetId + "," + link + ")" + "\n")
+            sb.append(Constants.Constants.CONTAINS_LINK + "(" + tweetId + ",\"" + link + "\")" + "\n")
           }
         }
 
@@ -93,7 +93,7 @@ object GenerateEvidence {
         var hashtags = x.getAs[Seq[Row]](Constants.Constants.HASHTAGS)
         if(hashtags != null && hashtags.length > 0) {
           for(hashtag <- hashtags) {
-            sb.append(Constants.Constants.CONTAINS_HASHTAG + "(" + tweetId + "," + hashtag.getAs[String]("text") + ")" + "\n")
+            sb.append(Constants.Constants.CONTAINS_HASHTAG + "(" + tweetId + ",\"" + hashtag.getAs[String]("text") + "\")" + "\n")
           }
         }
 
