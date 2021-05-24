@@ -102,7 +102,9 @@ object GenerateEvidence {
       })
 
       // Consolidating all the evidence to a file.
-      writer.write(sbBroadcast.value.toString())
+      synchronized {
+        writer.write(sbBroadcast.value.toString())
+      }
     } catch {
       case e: Exception =>
         System.out.println("GenerateEvidence :: constructEvidence :: Exception encountered while writing to the file")
