@@ -98,13 +98,13 @@ object GenerateEvidence {
         }
 
         // Writing to the broadcasted string builder.
-        sbBroadcast.value.append(sb.toString())
+        synchronized {
+          sbBroadcast.value.append(sb.toString())
+        }
       })
 
       // Consolidating all the evidence to a file.
-      synchronized {
-        writer.write(sbBroadcast.value.toString())
-      }
+      writer.write(sbBroadcast.value.toString())
     } catch {
       case e: Exception =>
         System.out.println("GenerateEvidence :: constructEvidence :: Exception encountered while writing to the file")
